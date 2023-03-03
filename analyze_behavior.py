@@ -12,6 +12,8 @@ Behavioral Analyses for chipmunk_solo
 from os import path
 from glob import glob
 import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
 import sys
 # sys.path.insert(0, r'C:\Users\Anne\chiCa')  # wherever the parent directory for chiCa lives. just need to run it once
 from chiCa import *
@@ -80,7 +82,7 @@ for file in file_names:
     if path.exists(analysis_folder):
         # get aligned data
         aligned_file = glob(analysis_folder + '*_video_alignment.npy')
-        aligned_data_paths.append(aligned_data_paths[0])
+        aligned_data_paths.append(aligned_file[0])
         print(f'Aligned data for session {sessions[count]} added to aligned_data_paths list.')
         print('------------------------------')
         count+=1
@@ -89,15 +91,35 @@ for file in file_names:
         print('------------------------------')
         count+=1
         
-#%% Load trial data
+#%% Sort variables of interest
 
-trialdata = []
-for file in file_names:
-    chipmunk_folder = path.split(file)[0]
-    current_file_data_path = glob(chipmunk_folder + "/*.h5")
-    df = pd.read_hdf(current_file_data_path[0])
-    trialdata.append(df)
+# Load trial data 
+trialdata = [pd.read_hdf(glob(path.split(file)[0] + "/*.h5")[0]) for file in file_names]
 
+# Get wait times
+wait_times = [np.array(session['actual_wait_time']) for session in trialdata]
+
+# Set up the plot
+fig, ax = plt.subplots()
+
+# Iterate over the data and plot each histogram
+for arr in wait_times:
+    ax.hist(arr, bins=20, alpha=0.5, density=True)
+
+# Add a legend
+ax.legend(['Array 1', 'Array 2', 'Array 3'])
+
+# Set the x-axis label
+ax.set_xlabel('Values')
+
+# Set the y-axis label
+ax.set_ylabel('Frequency')
+
+# Set the title
+ax.set_title('Frequency Distribution of Arrays')
+
+# Show the plot
+plt.show()
 
 
     
