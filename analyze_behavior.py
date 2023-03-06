@@ -9,7 +9,7 @@ Behavioral Analyses for chipmunk_solo
 """
 # %% Import functions
 
-from os import path
+from os import path, makedirs
 from glob import glob
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -44,12 +44,12 @@ earlyGRBsessions = ['20230126_110314',
                      '20230217_132430',
                      '20230221_112843']
 
-file_names = pick_files_multi_session("chipmunk", "*.camlog", "BackStereo")
+camlog_file_names = pick_files_multi_session("chipmunk", "*.camlog", "BackStereo") #should rename this to camlog file names
 
 # Align data
-for camlog_file in file_names:
-    if str.split(camlog_file, '\\')[5] in earlyGRBsessions:
-        t = str.split(camlog_file, '\\')[5]
+for camlog_file in camlog_file_names:
+    if str.split(camlog_file, '/')[5] in earlyGRBsessions:
+        t = str.split(camlog_file, '/')[5]
         print('------------------------------')
         print(f'Using early sessions alignment function for {t}.')
         try:
@@ -59,7 +59,7 @@ for camlog_file in file_names:
             print("Continuing to the next one...")
             continue
     else:
-        t = str.split(camlog_file, '\\')[5]
+        t = str.split(camlog_file, '/')[5]
         print('------------------------------')
         print(f'Using default alignment function for {t}.')
         try:
@@ -72,13 +72,13 @@ for camlog_file in file_names:
 # %% Get aligned data file paths into a list
 
 sessions = []
-for file in file_names:
-    sessions.append(str.split(file, '\\')[5]) # could vary by operating systems
+for file in camlog_file_names:
+    sessions.append(str.split(file, '/')[5]) # could vary by operating systems
 
 aligned_data_paths = []
 count = 0
-for file in file_names:
-    analysis_folder = path.join(path.join(*str.split(file, '\\')[0:6], 'analysis\\')).replace(':', ':\\')
+for file in camlog_file_names:
+    analysis_folder = path.join(path.join(*str.split(file, '/')[0:6], 'analysis')) .replace('home', '/home')
     if path.exists(analysis_folder):
         # get aligned data
         aligned_file = glob(analysis_folder + '*_video_alignment.npy')
@@ -95,31 +95,45 @@ for file in file_names:
 
 # Load trial data 
 trialdata = [pd.read_hdf(glob(path.split(file)[0] + "/*.h5")[0]) for file in file_names]
+animalID = str.split(file, '/')[4]
 
 # Get wait times
-wait_times = [np.array(session['actual_wait_time']) for session in trialdata]
+wait_times = [np.array(session['waitTime']) for session in trialdata]
+actual_wait_times = [np.array(session['actual_wait_time']) for session in trialdata]
+
+wait_time_diff = []
+for array1, array2 in zip(wait_times, actual_wait_times):
+    wait_time_diff.append(array2-array1)
+
+# Define a list of colors that follows a gradient from red to blue based on the number of days
+colors = plt.cm.get_cmap('RdYlBu', len(wait_time_diff))
 
 # Set up the plot
 fig, ax = plt.subplots()
 
-# Iterate over the data and plot each histogram
-for arr in wait_times:
-    ax.hist(arr, bins=20, alpha=0.5, density=True)
+# Iterate over the data and plot each histogram separately, assigning a color based on the day
+for i, arr in enumerate(filter(lambda x: wait_times[x][0] != 0, range(len(wait_times)))):
+    color = colors(i)
+    ax.hist(wait_time_diff[arr], bins=20, alpha=0.4, color=color, label=f"Day {i+1}")
 
-# Add a legend
-ax.legend(['Array 1', 'Array 2', 'Array 3'])
+# Add figure details
+ax.legend()
+ax.set_xlabel('Wait time difference (s)')
+ax.text(0.5, -0.19, '(observed wait time-required wait time)', transform=ax.transAxes, ha='center', fontsize=8)
+ax.set_ylabel('# of trials')
+ax.set_title(f'Wait times across sessions for {animalID}')
 
-# Set the x-axis label
-ax.set_xlabel('Values')
+# Create a ScalarMappable object for the colorbar
+sm = plt.cm.ScalarMappable(cmap=colors)
+sm.set_array(range(len(wait_time_diff)))
 
-# Set the y-axis label
-ax.set_ylabel('Frequency')
+fig.tight_layout()
+fig.show()
 
-# Set the title
-ax.set_title('Frequency Distribution of Arrays')
+#%% Save figures
 
-# Show the plot
-plt.show()
+figures_dir = '/home/gabriel/figures-code/chipmunk_behavior/figures/'
+fig.savefig(f'{figures_dir}{animalID}_wait_time_difference.pdf', dpi=300)
 
 
     
