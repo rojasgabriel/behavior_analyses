@@ -78,7 +78,7 @@ for file in camlog_file_names:
 aligned_data_paths = []
 count = 0
 for file in camlog_file_names:
-    analysis_folder = path.join(path.join(*str.split(file, '/')[0:6], 'analysis')) .replace('home', '/home')
+    analysis_folder = path.join(path.join(*str.split(file, '/')[0:6], 'analysis/')) .replace('home', '/home')
     if path.exists(analysis_folder):
         # get aligned data
         aligned_file = glob(analysis_folder + '*_video_alignment.npy')
@@ -117,7 +117,7 @@ for i, arr in enumerate(filter(lambda x: wait_times[x][0] != 0, range(len(wait_t
     ax.hist(wait_time_diff[arr], bins=20, alpha=0.4, color=color, label=f"Day {i+1}")
 
 # Add figure details
-ax.legend()
+ax.legend(fontsize=6)
 ax.set_xlabel('Wait time difference (s)')
 ax.text(0.5, -0.19, '(observed wait time-required wait time)', transform=ax.transAxes, ha='center', fontsize=8)
 ax.set_ylabel('# of trials')
