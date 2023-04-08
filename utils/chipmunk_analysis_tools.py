@@ -36,138 +36,138 @@ def convert_specified_behavior_sessions(file_names, overwrite = False):
 
     #-----Set up the loop
     for current_file in file_names:
-        if not overwrite:
-            if os.path.isfile(os.path.splitext(current_file)[0] + '.h5'):
+        if os.path.isfile(os.path.splitext(current_file)[0] + '.h5'):
+            if not overwrite:
                 print(f'File: {os.path.split(current_file)[1]} was skipped because a corresponding h5 file exists already.')
                 print('---------------------------------------------------------------------------------------------------')
                 converted_files.append(os.path.splitext(current_file)[0] + '.h5')
                 continue #Move on to the next iteration if the file exists already and if it should not be overwritten
-        else:
-            try:
-                
-                #---------Do all the loading and conversion here
-                sesdata = loadmat(current_file, squeeze_me=True,
-                                      struct_as_record=True)['SessionData']
+        #else:
+        try:
             
-                tmp = sesdata['RawEvents'].tolist()
-                tmp = tmp['Trial'].tolist()
-                uevents = np.unique(np.hstack([t['Events'].tolist().dtype.names for t in tmp])) #Make sure not to duplicate state definitions
-                ustates = np.unique(np.hstack([t['States'].tolist().dtype.names for t in tmp]))
-                trialevents = []
-                trialstates = [] #Extract all trial states and events
-                for t in tmp:
-                     a = {u: np.array([np.nan]) for u in uevents}
-                     s = t['Events'].tolist()
-                     for b in s.dtype.names:
-                         if isinstance(s[b].tolist(), float) or isinstance(s[b].tolist(), int): 
-                             #Make sure to include single values as an array with a dimension
-                             #Arrgh, in the unusual case that a value is an int this should also apply!
-                             a[b] = np.array([s[b].tolist()])
-                         else:
-                                a[b] = s[b].tolist()
-                     trialevents.append(a)
-                     a = {u:None for u in ustates}
-                     s = t['States'].tolist()
-                     for b in s.dtype.names:
-                             a[b] = s[b].tolist()
-                     trialstates.append(a)
-                trialstates = pd.DataFrame(trialstates)
-                trialevents = pd.DataFrame(trialevents)
-                trialdata = pd.merge(trialevents,trialstates,left_index=True, right_index=True)
-                
-                # Insert a column for DemonWrongChoice in trialda if necessary
-                if 'DemonWrongChoice' not in trialdata.columns:
-                    trialdata.insert(trialdata.shape[1], 'DemonWrongChoice', [np.array([np.nan, np.nan])] * trialdata.shape[0])
-                
-                
-                #Add response and stimulus train related information: correct side, rate, event occurence time stamps
-                trialdata.insert(trialdata.shape[1], 'response_side', sesdata['ResponseSide'].tolist())
-                trialdata.insert(trialdata.shape[1], 'correct_side', sesdata['CorrectSide'].tolist())
-                
-                #Get stim modality
-                tmp_modality_numeric = sesdata['Modality'].tolist()
-                temp_modality = []
-                for t in tmp_modality_numeric:
-                    if t == 1:
-                        temp_modality.append('visual')
-                    elif t == 2: 
-                        temp_modality.append('auditory')
-                    elif t == 3:
-                        temp_modality.append('audio-visual')
-                    else: 
-                        temp_modality.append(np.nan)
-                        print('Could not determine modality and set value to nan')
-                        
-                trialdata.insert(trialdata.shape[1], 'stimulus_modality', temp_modality)
-                
-                #Reconstruct the time stamps for the individual stimuli
-                event_times = []
-                event_duration = sesdata['StimulusDuration'].tolist()[0]
-                for t in range(trialdata.shape[0]):
-                    if tmp_modality_numeric[t] < 3: #Unisensory
-                        temp_isi = sesdata['InterStimulusIntervalList'].tolist().tolist()[t][tmp_modality_numeric[t]-1]
-                        #Index into the corresponding trial and find the isi for the corresponding modality
-                    else:
-                        temp_isi = sesdata['InterStimulusIntervalList'].tolist().tolist()[t][0]
-                        #For now assume synchronous and only look at visual stims
-                        warnings.warn('Found multisensory trials, assumed synchronous condition')
+            #---------Do all the loading and conversion here
+            sesdata = loadmat(current_file, squeeze_me=True,
+                                  struct_as_record=True)['SessionData']
+        
+            tmp = sesdata['RawEvents'].tolist()
+            tmp = tmp['Trial'].tolist()
+            uevents = np.unique(np.hstack([t['Events'].tolist().dtype.names for t in tmp])) #Make sure not to duplicate state definitions
+            ustates = np.unique(np.hstack([t['States'].tolist().dtype.names for t in tmp]))
+            trialevents = []
+            trialstates = [] #Extract all trial states and events
+            for t in tmp:
+                 a = {u: np.array([np.nan]) for u in uevents}
+                 s = t['Events'].tolist()
+                 for b in s.dtype.names:
+                     if isinstance(s[b].tolist(), float) or isinstance(s[b].tolist(), int): 
+                         #Make sure to include single values as an array with a dimension
+                         #Arrgh, in the unusual case that a value is an int this should also apply!
+                         a[b] = np.array([s[b].tolist()])
+                     else:
+                            a[b] = s[b].tolist()
+                 trialevents.append(a)
+                 a = {u:None for u in ustates}
+                 s = t['States'].tolist()
+                 for b in s.dtype.names:
+                         a[b] = s[b].tolist()
+                 trialstates.append(a)
+            trialstates = pd.DataFrame(trialstates)
+            trialevents = pd.DataFrame(trialevents)
+            trialdata = pd.merge(trialevents,trialstates,left_index=True, right_index=True)
+            
+            # Insert a column for DemonWrongChoice in trialda if necessary
+            if 'DemonWrongChoice' not in trialdata.columns:
+                trialdata.insert(trialdata.shape[1], 'DemonWrongChoice', [np.array([np.nan, np.nan])] * trialdata.shape[0])
+            
+            
+            #Add response and stimulus train related information: correct side, rate, event occurence time stamps
+            trialdata.insert(trialdata.shape[1], 'response_side', sesdata['ResponseSide'].tolist())
+            trialdata.insert(trialdata.shape[1], 'correct_side', sesdata['CorrectSide'].tolist())
+            
+            #Get stim modality
+            tmp_modality_numeric = sesdata['Modality'].tolist()
+            temp_modality = []
+            for t in tmp_modality_numeric:
+                if t == 1:
+                    temp_modality.append('visual')
+                elif t == 2: 
+                    temp_modality.append('auditory')
+                elif t == 3:
+                    temp_modality.append('audio-visual')
+                else: 
+                    temp_modality.append(np.nan)
+                    print('Could not determine modality and set value to nan')
                     
-                    temp_trial_event_times = [temp_isi[0]] 
-                    for k in range(1,temp_isi.shape[0]-1): #Start at 1 because the first Isi is already the timestamp after the play stimulus
-                        temp_trial_event_times.append(temp_trial_event_times[k-1] + event_duration + temp_isi[k])
+            trialdata.insert(trialdata.shape[1], 'stimulus_modality', temp_modality)
+            
+            #Reconstruct the time stamps for the individual stimuli
+            event_times = []
+            event_duration = sesdata['StimulusDuration'].tolist()[0]
+            for t in range(trialdata.shape[0]):
+                if tmp_modality_numeric[t] < 3: #Unisensory
+                    temp_isi = sesdata['InterStimulusIntervalList'].tolist().tolist()[t][tmp_modality_numeric[t]-1]
+                    #Index into the corresponding trial and find the isi for the corresponding modality
+                else:
+                    temp_isi = sesdata['InterStimulusIntervalList'].tolist().tolist()[t][0]
+                    #For now assume synchronous and only look at visual stims
+                    warnings.warn('Found multisensory trials, assumed synchronous condition')
                 
-                    event_times.append(temp_trial_event_times + trialdata['PlayStimulus'][t][0]) #Add the timestamp for play stimulus to the event time
-                
-                trialdata.insert(trialdata.shape[1], 'stimulus_event_timestamps', event_times)
-                
-                #Insert the outcome record for faster access to the different trial outcomes
-                trialdata.insert(0, 'outcome_record', sesdata['OutcomeRecord'].tolist())
-                
-                try: 
-                    tmp = sesdata['TrialDelays'].tolist()
-                    for key in tmp[0].dtype.fields.keys(): #Find all the keys and extract the data associated with them
-                        tmp_delay = tmp[key].tolist()
-                        trialdata.insert(trialdata.shape[1], key , tmp_delay)
-                except:
-                    print('For this version of chipmunk the task delays struct was not implemented yet.\nDid not generate the respective columns in the data frame.')
-                    
-                tmp = sesdata['ActualWaitTime'].tolist()
-                trialdata.insert(trialdata.shape[1], 'actual_wait_time' , tmp)
-                #TEMPORARY: import the demonstrator and observer id
-                tmp = sesdata['TrialSettings'].tolist()
-                trialdata.insert(trialdata.shape[1], 'demonstrator_ID' , tmp['demonID'].tolist())
-                
-                #Add a generic state tracking the timing of outcome presentation, this is also a 1d array of two elements
-                outcome_timing = []
-                for k in range(trialdata.shape[0]):
-                    if np.isnan(trialdata['DemonReward'][k][0]) == 0:
-                        outcome_timing.append(np.array([trialdata['DemonReward'][k][0], trialdata['DemonReward'][k][0]]))
-                    elif np.isnan(trialdata['DemonWrongChoice'][k][0]) == 0:
-                        outcome_timing.append(np.array([trialdata['DemonWrongChoice'][k][0],trialdata['DemonWrongChoice'][k][0]]))
-                    else:
-                        outcome_timing.append(np.array([np.nan]))
-                trialdata.insert(trialdata.shape[1], 'outcome_presentation', outcome_timing)
-                
-                # Retrieve the flag for revised choices
-                trialdata.insert(trialdata.shape[1], 'revise_choice_flag', np.ones(trialdata.shape[0], dtype = bool) * sesdata['ReviseChoiceFlag'].tolist())
-                
-                if 'ObsOutcomeRecord' in sesdata.dtype.fields:
-                    trialdata.insert(1, 'observer_outcome_record', sesdata['ObsOutcomeRecord'].tolist())
-                    tmp = sesdata['ObsActualWaitTime'].tolist()
-                    trialdata.insert(trialdata.shape[1], 'observer_actual_wait_time' , tmp)
-                    tmp = sesdata['TrialSettings'].tolist()
-                    trialdata.insert(trialdata.shape[1], 'dobserver_ID' , tmp['obsID'].tolist())
-                    
-                    
-                #Finally, verify the the number of trials
-                
-                
-                #----Now the saving
-                trialdata.to_hdf(os.path.splitext(current_file)[0] + '.h5', '/Data') #Save as hdf5
-                converted_files.append(os.path.splitext(current_file)[0] + '.h5') #Keep record of the converted files
-                
+                temp_trial_event_times = [temp_isi[0]] 
+                for k in range(1,temp_isi.shape[0]-1): #Start at 1 because the first Isi is already the timestamp after the play stimulus
+                    temp_trial_event_times.append(temp_trial_event_times[k-1] + event_duration + temp_isi[k])
+            
+                event_times.append(temp_trial_event_times + trialdata['PlayStimulus'][t][0]) #Add the timestamp for play stimulus to the event time
+            
+            trialdata.insert(trialdata.shape[1], 'stimulus_event_timestamps', event_times)
+            
+            #Insert the outcome record for faster access to the different trial outcomes
+            trialdata.insert(0, 'outcome_record', sesdata['OutcomeRecord'].tolist())
+            
+            try: 
+                tmp = sesdata['TrialDelays'].tolist()
+                for key in tmp[0].dtype.fields.keys(): #Find all the keys and extract the data associated with them
+                    tmp_delay = tmp[key].tolist()
+                    trialdata.insert(trialdata.shape[1], key , tmp_delay)
             except:
-                warnings.warn(f"CUATON: An error occured and {current_file} could not be converted")
+                print('For this version of chipmunk the task delays struct was not implemented yet.\nDid not generate the respective columns in the data frame.')
+                
+            tmp = sesdata['ActualWaitTime'].tolist()
+            trialdata.insert(trialdata.shape[1], 'actual_wait_time' , tmp)
+            #TEMPORARY: import the demonstrator and observer id
+            tmp = sesdata['TrialSettings'].tolist()
+            trialdata.insert(trialdata.shape[1], 'demonstrator_ID' , tmp['demonID'].tolist())
+            
+            #Add a generic state tracking the timing of outcome presentation, this is also a 1d array of two elements
+            outcome_timing = []
+            for k in range(trialdata.shape[0]):
+                if np.isnan(trialdata['DemonReward'][k][0]) == 0:
+                    outcome_timing.append(np.array([trialdata['DemonReward'][k][0], trialdata['DemonReward'][k][0]]))
+                elif np.isnan(trialdata['DemonWrongChoice'][k][0]) == 0:
+                    outcome_timing.append(np.array([trialdata['DemonWrongChoice'][k][0],trialdata['DemonWrongChoice'][k][0]]))
+                else:
+                    outcome_timing.append(np.array([np.nan]))
+            trialdata.insert(trialdata.shape[1], 'outcome_presentation', outcome_timing)
+            
+            # Retrieve the flag for revised choices
+            trialdata.insert(trialdata.shape[1], 'revise_choice_flag', np.ones(trialdata.shape[0], dtype = bool) * sesdata['ReviseChoiceFlag'].tolist())
+            
+            if 'ObsOutcomeRecord' in sesdata.dtype.fields:
+                trialdata.insert(1, 'observer_outcome_record', sesdata['ObsOutcomeRecord'].tolist())
+                tmp = sesdata['ObsActualWaitTime'].tolist()
+                trialdata.insert(trialdata.shape[1], 'observer_actual_wait_time' , tmp)
+                tmp = sesdata['TrialSettings'].tolist()
+                trialdata.insert(trialdata.shape[1], 'dobserver_ID' , tmp['obsID'].tolist())
+                
+                
+            #Finally, verify the the number of trials
+            
+            
+            #----Now the saving
+            trialdata.to_hdf(os.path.splitext(current_file)[0] + '.h5', '/Data') #Save as hdf5
+            converted_files.append(os.path.splitext(current_file)[0] + '.h5') #Keep record of the converted files
+            
+        except:
+            warnings.warn(f"CUATON: An error occured and {current_file} could not be converted")
     return converted_files
 
    ###################################################################################################             

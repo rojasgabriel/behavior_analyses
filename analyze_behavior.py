@@ -14,9 +14,7 @@ from glob import glob
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-import sys
-# sys.path.insert(0, r'C:\Users\Anne\chiCa')  # wherever the parent directory for chiCa lives. just need to run it once
-from chiCa import *
+from utils import *
 
 
 # %% Convert .mat files to .h5
