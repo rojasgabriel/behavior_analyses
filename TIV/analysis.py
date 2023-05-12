@@ -1,16 +1,18 @@
 from utils import get_filepath, load_dlc_data, load_experiment_data_joao
 import os
 from glob import glob
+import numpy as np
+import matplotlib.pyplot as plt
 
 #Define basic data lookup parameters
 params = dict({'subject':'JC111', 
-             'session':'20230324_131923', 
-             'subfolders':'*', 
-             'extension':'.h5'})
+               'session':'20230324_131923',
+               'subfolders':'*',
+               'extension':'.h5'})
 
 data_paths = get_filepath(subject = params['subject'], 
                           session = params['session'], 
-                          subfolders = params['subfolders'], 
+                          subfolders = 'dlc_analysis', 
                           extension = params['extension'])
 
 if type(data_paths) is str: #check if only one data_path is returned. convert to list if so
@@ -40,4 +42,16 @@ bottom_bpts, bottom_dlc_coords_x, bottom_dlc_coords_y, bottom_dlc_coords_likelih
 #Load trial data
 analysis_folders = [os.path.dirname(r) for r in glob(r'C:/Users/Anne/data/JC111/*/*/*.mptracker.h5')]
 task_folders = [os.path.dirname(r) for r in glob(r'C:/Users/Anne/data/JC111/*/*/*.triallog.h5')]
-[load_experiment_data_joao(analysis_folders, task_folders) for analysis_folder, task_folder in zip(analysis_folders, task_folders)]
+
+for analysis_folder, task_folder in zip(analysis_folders, task_folders):
+    if not len(analysis_folders) == 1:
+        sessiondata = []
+        sessiondata.append(trialdata)
+    trialdata = load_experiment_data_joao(analysis_folder, task_folder)
+
+def moving_average(a, n=50):
+    ret = np.cumsum(a, dtype=float)
+    ret[n:] = ret[n:] - ret[:-n]
+    return ret[n - 1:] / n
+
+plt.plot(moving_average(trialdata['rewarded']))
