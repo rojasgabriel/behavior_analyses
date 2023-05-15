@@ -1,4 +1,4 @@
-from utils import *
+from utils import get_filepath, load_dlc_data, load_experiment_data_joao, moving_average
 import os
 from glob import glob
 import numpy as np
