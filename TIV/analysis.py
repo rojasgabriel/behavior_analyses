@@ -1,4 +1,4 @@
-from utils import get_filepath, load_dlc_data, load_experiment_data_joao
+from utils import *
 import os
 from glob import glob
 import numpy as np
@@ -48,10 +48,5 @@ for analysis_folder, task_folder in zip(analysis_folders, task_folders):
         sessiondata = []
         sessiondata.append(trialdata)
     trialdata = load_experiment_data_joao(analysis_folder, task_folder)
-
-def moving_average(a, n=50):
-    ret = np.cumsum(a, dtype=float)
-    ret[n:] = ret[n:] - ret[:-n]
-    return ret[n - 1:] / n
 
 plt.plot(moving_average(trialdata['rewarded']))
