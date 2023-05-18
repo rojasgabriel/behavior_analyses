@@ -123,11 +123,39 @@ def load_data_from_droplets(sessionfolder,
                       'timeout_time':timeout_time,
                       'stim_intensity':stim_intensity,
                       'stim_rates':stim_rates,
-                      'pupil_diameter':eyedata['diameter'],
                       'frame_times':camtime})
     
-    return trialdata,camlog,camcomm,camtime, eyedata
+    return trialdata,camlog,camcomm,camtime,eyedata
 
+def get_frame_times(camtime, trialdata):
+    frame_rate = np.mean(1./np.diff(camtime))
+
+    trial_start_frames = np.zeros(shape=(len(trialdata['trial_start']),1))
+    stim_onset_frames = np.zeros(shape=(len(trialdata['stim_onset']),1))
+    response_onset_frames = np.zeros(shape=(len(trialdata['stim_onset']),1))
+    reward_onset_frames = np.zeros(shape=(len(trialdata['reward_time']),1))
+    trial_end_frames = np.zeros(shape=(len(trialdata['trial_start']),1))
+    trial_frame_length = np.zeros(shape=(len(trialdata['trial_start']),1))
+    for itrial,t in enumerate(trialdata['trial_start']):
+        if itrial == len(trialdata['trial_start'])-1:
+            continue
+        trial_start_frames[itrial] = np.floor(trialdata['trial_start'][itrial]*frame_rate)
+        stim_onset_frames[itrial] = np.floor(trialdata['stim_onset'][itrial]*frame_rate)
+        response_onset_frames[itrial] = np.floor(trialdata['stim_onset'][itrial]*frame_rate+frame_rate) #response period begins 1s after stim onset
+        reward_onset_frames[itrial] = np.floor(trialdata['reward_time'][itrial]*frame_rate)
+        trial_end_frames[itrial] = np.floor(trialdata['trial_start'][itrial]*frame_rate+trial_frame_length[itrial])
+
+        trial_duration = trialdata['trial_start'][itrial+1] - trialdata['trial_start'][itrial]
+        trial_frame_length[itrial] = np.floor(trial_duration*frame_rate)
+
+    trial_frame_times = dict({'trial_start_frames':trial_start_frames,
+                              'stim_onset_frames':stim_onset_frames,
+                              'response_onset_frames':response_onset_frames,
+                              'reward_onset_frames':reward_onset_frames,
+                              'trial_end_frames':trial_end_frames,
+                              'trial_frame_length':trial_frame_length})
+
+    return trial_frame_times
 
 def moving_average(a, n=50): #n = window to average across
     ret = np.cumsum(a, dtype=float)
