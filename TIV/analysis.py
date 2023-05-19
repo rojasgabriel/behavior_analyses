@@ -1,4 +1,4 @@
-from utils import get_filepath, load_dlc_data, load_data_from_droplets, get_frame_times
+from utils import get_filepath, load_dlc_data, load_data_from_droplets, get_frame_times, get_pupil_diameters_per_trial
 import os
 from os.path import join as pjoin
 import matplotlib.pyplot as plt
@@ -23,6 +23,7 @@ if type(data_paths) is str: #check if only one data_path is returned. convert to
     data_paths = tmp
     del tmp
 
+#Load DLC data
 lateral_data_path=[]
 bottom_data_path=[]
 for path in data_paths:
@@ -36,17 +37,17 @@ del path
 lateral_data_path = lateral_data_path or [None]
 bottom_data_path = bottom_data_path or [None]
 
-# Reading lateral view data
+#Reading lateral view data
 lateral_bpts, lateral_dlc_coords_x, lateral_dlc_coords_y, lateral_dlc_coords_likelihood = load_dlc_data(lateral_data_path[0])
 del lateral_data_path
 
-# Reading bottom view data
+#Reading bottom view data
 bottom_bpts, bottom_dlc_coords_x, bottom_dlc_coords_y, bottom_dlc_coords_likelihood = load_dlc_data(bottom_data_path[0])
 del bottom_data_path
 
-#Load trial data and check the frame rate
+#Load trial data and check video frame rate
 sessionfolder = pjoin(data_folder,params['subject'],params['session'])
-trialdata,camlog,camcomm,camtime,eyedata = load_data_from_droplets(sessionfolder)
+trialdata,camlog,camcomm,camtime,eyedata,no_choice_trials = load_data_from_droplets(sessionfolder)
 
 #Visualize framerate
 print(len(camtime),np.mean(1./np.diff(camtime)))
@@ -73,7 +74,7 @@ axes[2].legend()
 axes[2].set_xlabel('Frames')
 plt.tight_layout()
 
-#Get frame times
+#Get frame times and visualze frame-related variables
 trial_frame_times = get_frame_times(camtime, trialdata)
 
 plt.figure(figsize=(8, 6))
@@ -105,7 +106,5 @@ plt.title('Trial Frame Length')
 plt.tight_layout()
 plt.show()
 
-# if trialdata['response'][itrial] == 0:
-#     no_choice_trials[itrial] = 1
-# else:
-#     no_choice_trials[itrial] = 0
+#Get pupil data by trial
+trial_pupil_diameters = get_pupil_diameters_per_trial(trialdata, eyedata, trial_frame_times)

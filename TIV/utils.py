@@ -6,6 +6,7 @@ import numpy as np
 from labcams import parse_cam_log, unpackbits  # pip install labcams if it doesn't work
 import h5py as h5
 from scipy.interpolate import interp1d
+from scipy import stats
 
 default_preferences = {'datapath':[pjoin(os.path.expanduser('~'),'data')]}
 
@@ -62,7 +63,6 @@ def load_data_from_droplets(sessionfolder,
             for k in pupildata.keys():
                 eyedata[k] = pupildata[k][:]
     
-    from labcams import parse_cam_log
     camlog,camcomm = parse_cam_log(glob(pjoin(sessionfolder,dropletsfolder,'*.camlog'))[0])
 
     camsyncmethod = 'trial_init'
@@ -125,7 +125,15 @@ def load_data_from_droplets(sessionfolder,
                       'stim_rates':stim_rates,
                       'frame_times':camtime})
     
-    return trialdata,camlog,camcomm,camtime,eyedata
+    no_choice_trials = np.zeros(shape=(len(trialdata['trial_start']),1))
+    for itrial,t in enumerate(trialdata['trial_start']):
+        if trialdata['response'][itrial] == 0:
+            no_choice_trials[itrial] = 1
+        else:
+            no_choice_trials[itrial] = 0
+
+
+    return trialdata,camlog,camcomm,camtime,eyedata,no_choice_trials
 
 def get_frame_times(camtime, trialdata):
     frame_rate = np.mean(1./np.diff(camtime))
@@ -143,10 +151,9 @@ def get_frame_times(camtime, trialdata):
         stim_onset_frames[itrial] = np.floor(trialdata['stim_onset'][itrial]*frame_rate)
         response_onset_frames[itrial] = np.floor(trialdata['stim_onset'][itrial]*frame_rate+frame_rate) #response period begins 1s after stim onset
         reward_onset_frames[itrial] = np.floor(trialdata['reward_time'][itrial]*frame_rate)
-        trial_end_frames[itrial] = np.floor(trialdata['trial_start'][itrial]*frame_rate+trial_frame_length[itrial])
-
         trial_duration = trialdata['trial_start'][itrial+1] - trialdata['trial_start'][itrial]
         trial_frame_length[itrial] = np.floor(trial_duration*frame_rate)
+        trial_end_frames[itrial] = np.floor((trialdata['trial_start'][itrial]*frame_rate)+trial_frame_length[itrial])
 
     trial_frame_times = dict({'trial_start_frames':trial_start_frames,
                               'stim_onset_frames':stim_onset_frames,
@@ -156,6 +163,20 @@ def get_frame_times(camtime, trialdata):
                               'trial_frame_length':trial_frame_length})
 
     return trial_frame_times
+
+def get_pupil_diameters_per_trial(trialdata, eyedata, trial_frame_times):
+    from scipy import stats
+    m = stats.mode(trial_frame_times['trial_frame_length'])
+
+    # trial_pupil_diameters = np.zeros(shape=(len(trialdata['trial_start']), int(m.mode[0][0])))
+    trial_pupil_diameters = []
+    for itrial,t in enumerate(trialdata['trial_start']):
+        if itrial == len(trialdata['trial_start'])-1:
+            continue
+        trial_pupil_diameters.append(eyedata['diameter'][int(trial_frame_times['trial_start_frames'][itrial]):int(trial_frame_times['trial_end_frames'][itrial])])
+        trial_pupil_diameters[itrial] = trial_pupil_diameters[itrial][:int(m.mode[0][0])]
+
+    return trial_pupil_diameters
 
 def moving_average(a, n=50): #n = window to average across
     ret = np.cumsum(a, dtype=float)
