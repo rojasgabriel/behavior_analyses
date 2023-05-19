@@ -108,3 +108,19 @@ plt.show()
 
 #Get pupil data by trial
 trial_pupil_diameters = get_pupil_diameters_per_trial(trialdata, eyedata, trial_frame_times)
+#Trial pupil diameters are stored in a list of arrays, one array per trial
+#Each array contains the pupil diameters for each frame of the trial
+#Calculate the mean of each array to get the mean pupil diameter for each trial and ignore nans
+#If the mean value is more than 3 standard deviations away from the mean of the whole session, ignore it
+#Store the mean for each trial in an array called trial_pupil_diameters_mean
+#Plot trial_pupil_diameters_mean using a moving average of 50 to smooth the data
+trial_pupil_diameters_mean = np.array([np.nanmean(trial_pupil_diameters[i]) for i in range(len(trial_pupil_diameters))])
+trial_pupil_diameters_mean = trial_pupil_diameters_mean[np.abs(trial_pupil_diameters_mean - np.nanmean(trial_pupil_diameters_mean)) < 3*np.nanstd(trial_pupil_diameters_mean)]
+plt.plot(np.convolve(trial_pupil_diameters_mean, np.ones(50)/50, mode='valid'))
+#Use a different y-axis for plotting trialdata['rewarded'] using a moving average of 50 to smooth the data
+plt.twinx()
+plt.plot(np.convolve(trialdata['rewarded'], np.ones(50)/50, mode='valid'), 'r')
+#Calculate the correlation between the two signals and plot the r squared value
+#If the size of the two signals is different, use the smaller size for the correlation calculation
+plt.title(f"r^2 = {np.corrcoef(trial_pupil_diameters_mean[:min(len(trial_pupil_diameters_mean), len(trialdata['rewarded']))], trialdata['rewarded'][:min(len(trial_pupil_diameters_mean), len(trialdata['rewarded']))])[0,1]**2}")
+plt.show()
