@@ -164,6 +164,67 @@ def get_frame_times(camtime, trialdata):
 
     return trial_frame_times
 
+def visualize_frame_times(trial_frame_times):
+    import matplotlib.pyplot as plt
+    plt.figure(figsize=(8, 6))
+
+    plt.subplot(3, 2, 1)
+    plt.plot(trial_frame_times['trial_start_frames'])
+    plt.title('Trial Start Frames')
+
+    plt.subplot(3, 2, 2)
+    plt.plot(trial_frame_times['stim_onset_frames'])
+    plt.title('Stim Onset Frames')
+
+    plt.subplot(3, 2, 3)
+    plt.plot(trial_frame_times['response_onset_frames'])
+    plt.title('Response Onset Frames')
+
+    plt.subplot(3, 2, 4)
+    plt.plot(trial_frame_times['reward_onset_frames'])
+    plt.title('Reward Onset Frames')
+
+    plt.subplot(3, 2, 5)
+    plt.plot(trial_frame_times['trial_end_frames'])
+    plt.title('Trial End Frames')
+
+    plt.subplot(3, 2, 6)
+    plt.plot(trial_frame_times['trial_frame_length'])
+    plt.title('Trial Frame Length')
+
+    plt.tight_layout()
+
+
+def visualize_eye_data(eyedata):
+    import matplotlib.pyplot as plt
+    fig, axes = plt.subplots(3, 1, figsize=(4, 5))
+    axes[0].plot(eyedata['diameter'], label='diameter', color = 'r')
+    axes[0].legend()
+    axes[0].set_xlabel('Frames')
+    axes[1].plot(eyedata['elevation'], label='elevation', color = 'b')
+    axes[1].legend()
+    axes[1].set_xlabel('Frames')
+    axes[2].plot(eyedata['azimuth'], label='azimuth', color = 'k')
+    axes[2].legend()
+    axes[2].set_xlabel('Frames')
+    plt.tight_layout()
+
+
+def visualize_frame_rate(camtime, trialdata, params):
+    import matplotlib.pyplot as plt
+    import numpy as np
+    print(len(camtime),np.mean(1./np.diff(camtime)))
+    plt.figure(figsize=[10,2])
+    plt.plot(camtime[:-1],1./np.diff(camtime),
+                    'o',alpha = 0.5,clip_on = False,label='camera rate')
+    plt.vlines(trialdata['trial_start'],25,30,color='r',lw = 0.5,label='trial start')
+    plt.legend()
+    plt.ylabel('Frame rate')
+    plt.xlabel('Time from camera start')
+    plt.ylim([0,np.max(plt.ylim())])
+    plt.title(f"{params['subject']} - {params['session']}")
+    plt.tight_layout()
+
 def get_pupil_diameters_per_trial(trialdata, eyedata, trial_frame_times):
     from scipy import stats
     m = stats.mode(trial_frame_times['trial_frame_length'])
@@ -178,7 +239,31 @@ def get_pupil_diameters_per_trial(trialdata, eyedata, trial_frame_times):
 
     return trial_pupil_diameters
 
-def moving_average(a, n=50): #n = window to average across
-    ret = np.cumsum(a, dtype=float)
-    ret[n:] = ret[n:] - ret[:-n]
-    return ret[n - 1:] / n
+def analyze_pupil_and_performance(trialdata, eyedata, trial_frame_times):
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    trial_pupil_diameters = get_pupil_diameters_per_trial(trialdata, eyedata, trial_frame_times)
+    trial_pupil_diameters_mean = np.array([np.nanmean(trial_pupil_diameters[i]) for i in range(len(trial_pupil_diameters))])
+    convolved_pupil_diameters = np.convolve(trial_pupil_diameters_mean, np.ones(25)/25, mode='valid')
+    convolved_rewarded = np.convolve(trialdata['rewarded'], np.ones(25)/25, mode='valid')
+
+    fig, ax1 = plt.subplots()
+    ax2 = ax1.twinx()
+
+    ax1.plot(convolved_pupil_diameters, label='Pupil', color='b')
+    ax1.set_xlabel('Trials')
+    ax1.set_ylabel('Pupil diameter')
+    ax1.yaxis.label.set_color('b')
+    ax1.tick_params(axis='y', colors='b')
+    ax1.spines['left'].set_color('b')
+
+    ax2.plot(convolved_rewarded, label='Performance', color='r')
+    ax2.set_ylabel('Performance')
+    ax2.yaxis.label.set_color('r')
+    ax2.tick_params(axis='y', colors='r')
+    ax2.spines['right'].set_color('r')
+
+    plt.title(f"r^2 = {np.corrcoef(trial_pupil_diameters_mean[:min(len(trial_pupil_diameters_mean), len(trialdata['rewarded']))], trialdata['rewarded'][:min(len(trial_pupil_diameters_mean), len(trialdata['rewarded']))])[0,1]**2}")
+
+    plt.tight_layout()
