@@ -61,3 +61,65 @@ visualize_frame_times(trial_frame_times)
 
 #Analyze pupil data by trial
 analyze_pupil_and_performance(trialdata, eyedata, trial_frame_times)
+
+#Generate a design matrix to perform regression analysis
+#the design matrix is a matrix of regressors that will be used to predict the body part coordinates
+#we will use trial data to predict the body part coordinates
+#the variables we will use to predict the body part coordinates are: stimulus intensity, outcome, response, previous outcome, previous response
+
+#first, we need to create a matrix of regressors
+#the matrix of regressors will have a row for each frame
+#the columns will be the variables we want to use to predict the body part coordinates
+#the first column will be a column of ones, which will be used to calculate the intercept
+#the second column will be the stimulus intensity
+#the third column will be the outcome
+#the fourth column will be the response
+#the fifth column will be the previous outcome
+#the sixth column will be the previous response
+design_matrix = np.ones((len(trial_frame_times),6))
+design_matrix[:,1] = trialdata['stim_intensity']
+design_matrix[:,2] = trialdata['rewarded']
+design_matrix[:,3] = trialdata['response']
+design_matrix[:,4] = np.roll(trialdata['outcome'],1)
+design_matrix[:,5] = np.roll(trialdata['response'],1)
+
+#second, we need to create a matrix of body part coordinates
+#the matrix of body part coordinates will have a row for each frame
+#the columns will be the x and y coordinates of the body part
+#the first column will be the x coordinates of the body part
+#the second column will be the y coordinates of the body part
+body_part_coords = np.zeros((len(trial_frame_times),2))
+body_part_coords[:,0] = lateral_dlc_coords_x
+body_part_coords[:,1] = lateral_dlc_coords_y
+
+#third, we need to perform regression analysis
+#we will use the design matrix to predict the body part coordinates
+#we will use ordinary least squares regression
+#we will use the statsmodels package to perform the regression analysis
+import statsmodels.api as sm
+model = sm.OLS(body_part_coords,design_matrix)
+results = model.fit()
+print(results.summary())
+
+#fourth, we need to plot the results
+#we will plot the predicted body part coordinates against the actual body part coordinates
+import matplotlib.pyplot as plt
+plt.figure()
+plt.plot(body_part_coords[:,0],body_part_coords[:,1],'o',label='actual')
+plt.plot(results.predict(),body_part_coords[:,1],'o',label='predicted')
+plt.xlabel('x')
+plt.ylabel('y')
+plt.legend()
+plt.show()
+
+#fifth, we need to plot the r squared values
+#we will plot the r squared values for each body part
+#we will plot the r squared values for each body part as a function of time, averaged across trials
+plt.figure()
+plt.plot(results.rsquared,label='r squared')
+plt.xlabel('time')
+plt.ylabel('r squared')
+plt.legend()
+plt.show()
+
+
