@@ -63,7 +63,7 @@ def load_data_from_droplets(sessionfolder,
             for k in pupildata.keys():
                 eyedata[k] = pupildata[k][:]
     
-    camlog,camcomm = parse_cam_log(glob(pjoin(sessionfolder,dropletsfolder,'*.camlog'))[0])
+    camlog,camcomm = parse_cam_log(np.sort(glob(pjoin(sessionfolder,dropletsfolder,'*.camlog')))[0])
 
     camsyncmethod = 'trial_init'
     if 'var2' in camlog.columns:
@@ -71,14 +71,15 @@ def load_data_from_droplets(sessionfolder,
     
     # check the if the number of cam sync pulses is close to the number of trials if not the cable was not well connected
     trialdata = pd.read_hdf(glob(pjoin(sessionfolder,dropletsfolder,'*triallog.h5'))[0])
-    if len(camgpio):
-        if np.abs(len(camgpio) - len(trialdata))<5: # only if recorded most trials on the camera
-            if 2 in camgpio[0].keys():
-                gpiosync = camgpio[0][2]
+    if len(camgpio): # there are onsets
+        for k in camgpio[0].keys():
+            onsets = camgpio[0][k]
+            if np.abs(len(onsets) - len(trialdata))<5: # only if recorded most trials on the camera
+                sync = onsets
                 # check here if the trialstart was connected or it was the stim 
-                if np.mean(camgpio[1][2]-camgpio[0][2]) > 15:
+                if np.mean(camgpio[1][k]-camgpio[0][k]) > 15:
                     camsyncmethod='stim'
-                    #print('Using the stim command to sync {0}.'.format(sessionfolder))
+                    print('Using the stim command to sync {0}.'.format(sessionfolder))
     # otherwise use the network command
     if not 'sync' in locals():
         # then use the network command
@@ -236,7 +237,7 @@ def get_pupil_diameters_per_trial(trialdata, eyedata, trial_frame_times):
             continue
         trial_pupil_diameters.append(eyedata['diameter'][int(trial_frame_times['trial_start_frames'][itrial]):int(trial_frame_times['trial_end_frames'][itrial])])
         trial_pupil_diameters[itrial] = trial_pupil_diameters[itrial][:int(m.mode[0][0])]
-
+        
     return trial_pupil_diameters
 
 def analyze_pupil_and_performance(trialdata, eyedata, trial_frame_times):
@@ -245,7 +246,7 @@ def analyze_pupil_and_performance(trialdata, eyedata, trial_frame_times):
 
     trial_pupil_diameters = get_pupil_diameters_per_trial(trialdata, eyedata, trial_frame_times)
     trial_pupil_diameters_mean = np.array([np.nanmean(trial_pupil_diameters[i]) for i in range(len(trial_pupil_diameters))])
-    convolved_pupil_diameters = np.convolve(trial_pupil_diameters_mean, np.ones(25)/25, mode='valid')
+    convolved_pupil_diameters = np.convolve(trial_pupil_diameters_mean, np.ones(50)/50, mode='valid')
     convolved_rewarded = np.convolve(trialdata['rewarded'], np.ones(25)/25, mode='valid')
 
     fig, ax1 = plt.subplots()

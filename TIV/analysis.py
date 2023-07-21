@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 #Define basic data lookup parameters
-params = dict({'subject':'JC111', 
-               'session':'20230324_131923',
+params = dict({'subject':'JC099', 
+               'session':'20221116_123718',
                'subfolders':'*',
                'extension':'.h5'})
 
@@ -61,12 +61,3 @@ visualize_frame_times(trial_frame_times)
 
 #Analyze pupil data by trial
 analyze_pupil_and_performance(trialdata, eyedata, trial_frame_times)
-
-#Create design matrix
-design_matrix = np.zeros((len(trial_frame_times['trial_start_frames']),5))
-design_matrix[:,0] = trialdata['stim_intensity']
-design_matrix[:,1] = trialdata['rewarded']
-design_matrix[:,2] = trialdata['response']
-design_matrix[:,3] = np.roll(trialdata['rewarded'],1)
-design_matrix[:,4] = np.roll(trialdata['response'],1)
-
