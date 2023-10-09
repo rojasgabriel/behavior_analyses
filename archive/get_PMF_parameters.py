@@ -263,7 +263,7 @@ fig, axs = plt.subplots(4, 1, figsize=(8, 10))
 # Plot each list on a separate subplot
 axs[0].plot(x_values, biases, color='red')
 axs[0].set_title('Biases')
-axs[0].hlines(0.0,np.min(x_values),np.max(x_values),color = 'k',lw = 0.3) # plot an horizontal line as reference for chance performance
+# axs[0].hlines(0.0,np.min(x_values),np.max(x_values),color = 'k',lw = 0.3) # plot an horizontal line as reference for chance performance
 
 axs[1].plot(x_values, sensitivities, color='green')
 axs[1].set_title('Sensitivities')
