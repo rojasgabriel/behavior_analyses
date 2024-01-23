@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "../../chiCa"
+		},
+		{
+			"path": "../../glm-hmm"
 		}
 	],
 	"settings": {}
