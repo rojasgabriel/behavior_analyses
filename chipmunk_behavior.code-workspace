@@ -13,5 +13,7 @@
 			"path": "../../glm-hmm"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"todo-tree.tree.scanMode": "workspace"
+	}
 }
