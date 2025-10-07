@@ -1,21 +1,11 @@
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.3.0
+    rev: v6.0.0
     hooks:
     -   id: check-yaml
     -   id: end-of-file-fixer
     -   id: trailing-whitespace
-- repo: https://github.com/asmeurer/removestar
-  rev: "1.5"
-  hooks:
-    - id: removestar
-      args: [-i] # See docs for all args (-i edits file in-place)
-      additional_dependencies: # The libraries or packages your code imports
-        - git+file:///Users/gabriel/lib/djchurchland@loadchipmunk_rework # TODO: have to switch this to main at some point
-        - nbformat
-        - nbconvert
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    # Ruff version.
     rev: v0.13.0
     hooks:
         # Run the linter.
