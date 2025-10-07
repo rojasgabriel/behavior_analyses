@@ -14,4 +14,12 @@ repos:
           args: [ --fix ]
         # Run the formatter.
         - id: ruff-format
+- repo: https://github.com/asmeurer/removestar
+  rev: "1.5"
+  hooks:
+    - id: removestar
+      args: [-i] # See docs for all args (-i edits file in-place)
+      additional_dependencies: # The libraries or packages your code imports
+        - nbformat
+        - nbconvert
 exclude: '(?i)\.(svg|key|png)$'
