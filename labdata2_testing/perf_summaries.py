@@ -41,7 +41,8 @@ def _(data, np):
     ew_rate = []
     for ses in data.itertuples(index=False):
         ew_trials = ~(np.isin(np.array(ses.response_values), [-1, 1]))
-        ew_rate.append((ew_trials).sum() / ew_trials.shape[0])
+        rate = (ew_trials).sum() / ew_trials.shape[0] if ew_trials.shape[0] > 0 else 0
+        ew_rate.append(rate)
     return (ew_rate,)
 
 
@@ -97,7 +98,9 @@ def _(
     ax[1, 0].set_ylim((0, 1))
 
     ### performance on easy trials ###
-    xvalues = np.arange(0, ses_back, 1)
+    # Use actual number of sessions in data, not ses_back (in case filter reduces count)
+    n_sessions = len(data)
+    xvalues = np.arange(0, n_sessions, 1)
     ax[0, 1].plot(
         xvalues,
         data["performance_easy"][::-1],
