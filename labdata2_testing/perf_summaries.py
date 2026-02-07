@@ -15,49 +15,33 @@ def _():
 
 
 @app.cell
-def _(DecisionTask, np, pd):
-    def calculate_session_ew_rate(response_values):
-        """Calculate early withdrawal rate for a session."""
-        is_ew_trial = ~(np.isin(np.array(response_values), [-1, 1]))
-        return (
-            (is_ew_trial).sum() / is_ew_trial.shape[0]
-            if is_ew_trial.shape[0] > 0
-            else 0
-        )
-
+def _(DecisionTask, pd):
     mice = "GRB045"
     ses_back = 10
-    data_full = pd.DataFrame(DecisionTask.TrialSet() & f"subject_name = '{mice}'").tail(
-        ses_back
+    # Optional: Add session date filter here
+    # Example: session_date_filter = 'session_datetime >= "2024-01-01"'
+    session_date_filter = (
+        None  # Set to None to include all sessions, or add a date filter string
     )
 
-    # Apply session filter to remove poor quality sessions
-    # Calculate early withdrawal rate for each session to use as a quality filter
-    session_ew_rates = [
-        calculate_session_ew_rate(ses.response_values) for ses in data_full.itertuples()
-    ]
+    # Fetch data from database with optional session date filter
+    base_query = f"subject_name = '{mice}'"
+    if session_date_filter:
+        full_query = base_query + f" AND {session_date_filter}"
+    else:
+        full_query = base_query
 
-    # Add early withdrawal rate to dataframe for filtering
-    data_with_quality_metrics = data_full.copy()
-    data_with_quality_metrics["ew_rate_session"] = session_ew_rates
-
-    # Apply session filter: exclude sessions with >80% early withdrawal rate (can be adjusted)
-    # This ensures multisession graphs only include valid sessions
-    ew_threshold = 0.8
-    data = data_with_quality_metrics[
-        data_with_quality_metrics["ew_rate_session"] <= ew_threshold
-    ].copy()
-
+    data = pd.DataFrame(DecisionTask.TrialSet() & full_query).tail(ses_back)
     sesdata = data[data.session_name == data.session_name.iloc[-1]]
-    return calculate_session_ew_rate, data, data_full, ew_threshold, ses_back, sesdata
+    return data, ses_back, session_date_filter, sesdata
 
 
 @app.cell
-def _(calculate_session_ew_rate, data):
-    # Recalculate early withdrawal rate for filtered sessions
-    ew_rate = [
-        calculate_session_ew_rate(ses.response_values) for ses in data.itertuples()
-    ]
+def _(data, np):
+    ew_rate = []
+    for ses in data.itertuples(index=False):
+        ew_trials = ~(np.isin(np.array(ses.response_values), [-1, 1]))
+        ew_rate.append((ew_trials).sum() / ew_trials.shape[0])
     return (ew_rate,)
 
 
@@ -113,9 +97,7 @@ def _(
     ax[1, 0].set_ylim((0, 1))
 
     ### performance on easy trials ###
-    # Use actual number of sessions in filtered data, not ses_back
-    n_sessions = len(data)
-    xvalues = np.arange(0, n_sessions, 1)
+    xvalues = np.arange(0, ses_back, 1)
     ax[0, 1].plot(
         xvalues,
         data["performance_easy"][::-1],
