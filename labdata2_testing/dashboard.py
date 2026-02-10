@@ -19,7 +19,14 @@ import dash_bootstrap_components as dbc
 
 
 def fetch_mouse_data(mouse: str, sessions_back: int) -> tuple[pd.DataFrame, pd.DataFrame] | None:
-    """Fetch data for a specific mouse from the database."""
+    """
+    Fetch data for a specific mouse from the database.
+    
+    Returns:
+        tuple[pd.DataFrame, pd.DataFrame] | None: A tuple of (all_sessions_data, latest_session_data)
+            where all_sessions_data contains data for the requested number of recent sessions,
+            and latest_session_data contains only the most recent session. Returns None if no data found.
+    """
     data = pd.DataFrame(DecisionTask.TrialSet() & f"subject_name = '{mouse}'")
     if data.empty:
         return None
@@ -32,7 +39,20 @@ def fetch_mouse_data(mouse: str, sessions_back: int) -> tuple[pd.DataFrame, pd.D
 
 
 def calculate_metrics(data: pd.DataFrame, sesdata: pd.DataFrame, ses_back: int) -> dict:
-    """Calculate all performance metrics from the data."""
+    """
+    Calculate all performance metrics from the data.
+    
+    Returns:
+        dict: Dictionary containing calculated metrics with keys:
+            - unique_stims: array of unique stimulus intensities
+            - frac_correct: list of fraction correct per stimulus
+            - p_right: list of probability of right response per stimulus
+            - xvalues: array of x-axis values for session plots
+            - ew_rate: list of early withdrawal rates
+            - react_times: array of reaction times
+            - data: original DataFrame with all sessions
+            - sesdata: DataFrame with latest session data
+    """
     # Calculate early withdrawal rate
     ew_rate = []
     for ses in data.itertuples(index=False):
