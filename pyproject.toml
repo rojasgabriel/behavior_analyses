@@ -26,6 +26,5 @@ djchurchland = { path = "../djchurchland" }
 
 [tool.ruff]
 exclude = [
-    "*.ipynb",
     "psychometric_curves/fit_psychometric.py",
 ]
