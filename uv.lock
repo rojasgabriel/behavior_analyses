@@ -113,8 +113,8 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "chica", directory = "../chiCa" },
-    { name = "djchurchland", directory = "../djchurchland" },
+    { name = "chica", git = "https://github.com/churchlandlab/chiCa" },
+    { name = "djchurchland", git = "https://github.com/churchlandlab/djchurchland" },
     { name = "ipykernel", specifier = ">=6.0.0" },
     { name = "labdata", specifier = ">=0.0.22" },
     { name = "matplotlib", specifier = ">=3.0.0" },
@@ -257,7 +257,7 @@ wheels = [
 [[package]]
 name = "chica"
 version = "0.1"
-source = { directory = "../chiCa" }
+source = { git = "https://github.com/churchlandlab/chiCa#1bb1546074c4af0877b1bf6e1e9db7c43ea492c5" }
 
 [[package]]
 name = "click"
@@ -606,7 +606,7 @@ wheels = [
 [[package]]
 name = "djchurchland"
 version = "0.0"
-source = { directory = "../djchurchland" }
+source = { git = "https://github.com/churchlandlab/djchurchland#9547036f178234a04162dbfeb963b9c97cd534b1" }
 
 [[package]]
 name = "exceptiongroup"

@@ -21,8 +21,8 @@ dependencies = [
 package = false
 
 [tool.uv.sources]
-chiCa = { path = "../chiCa" }
-djchurchland = { path = "../djchurchland" }
+chiCa = { git = "https://github.com/churchlandlab/chiCa" }
+djchurchland = { git = "https://github.com/churchlandlab/djchurchland" }
 
 [tool.ruff]
 exclude = [
