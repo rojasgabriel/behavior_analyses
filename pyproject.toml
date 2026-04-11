@@ -23,3 +23,9 @@ package = false
 [tool.uv.sources]
 chiCa = { path = "../chiCa" }
 djchurchland = { path = "../djchurchland" }
+
+[tool.ruff]
+exclude = [
+    "*.ipynb",
+    "psychometric_curves/fit_psychometric.py",
+]
