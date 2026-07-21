@@ -23,8 +23,13 @@ jobs:
         with:
           python-version-file: .python-version
 
-      - name: Configure git credentials for private deps
-        run: git config --global url."https://x-access-token:${{ secrets.GH_PAT }}@github.com/".insteadOf "https://github.com/"
+      - name: Start SSH agent for private dependencies
+        uses: webfactory/ssh-agent@a6f90b1f127823b31d4d4a8d96047790581349bd # v0.9.1
+        with:
+          ssh-private-key: ${{ secrets.DJCHURCHLAND_DEPLOY_KEY }}
+
+      - name: Route djchurchland through its deploy key
+        run: git config --global url."git@github.com:churchlandlab/djchurchland".insteadOf "https://github.com/churchlandlab/djchurchland"
 
       - name: Install dependencies
         run: uv sync --frozen
