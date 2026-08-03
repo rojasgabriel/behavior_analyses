@@ -1,0 +1,4 @@
+contrast,estimate,ci_lower,ci_upper,p_value,n_trials,n_sessions,model,uncertainty
+high-sensory state effect on log response latency,-0.09604768638654473,-0.14728316704419048,-0.044812205728899004,0.00023858479579638784,28864,167,log_response_latency ~ high_sensory_state + stimulus_evidence_hz + C(choice_right) + trial_position_fraction + C(session_name),session-clustered 95% CI
+high-sensory state effect on current reward probability,0.2298585001310806,0.21502575996655807,0.24469124029560316,1.2499330286815147e-202,28864,167,rewarded ~ high_sensory_state + absolute_stimulus_evidence_hz + C(choice_right) + trial_position_fraction + C(session_name),session-clustered 95% CI
+within-session high-sensory occupancy drift,0.16650661773016845,0.07848806367297594,0.25452517178736095,0.00020914477002638857,28864,167,high_sensory_state ~ trial_position_fraction + C(session_name),session-clustered 95% CI

@@ -1,0 +1,5 @@
+subject_name,num_states,mean_test_log_likelihood_per_trial,automated_one_se_choice,audit_outcome,audit_reason
+GRB006,1,-0.517736,False,baseline,Static GLM baseline
+GRB006,2,-0.507464,False,recommend,Common persistent high-sensory and low-sensory states
+GRB006,3,-0.497671,False,reject,Third state rare short-lived and unstable
+GRB006,4,-0.488417,True,reject,Fourth state has 10 hard assignments and no trials above 0.70 posterior

@@ -1,0 +1,11 @@
+{
+  "generated_at_utc": "2026-08-03T19:24:57.464097+00:00",
+  "task": "LAB-TASKS-445",
+  "subject_name": "GRB006",
+  "posterior_threshold": 0.7,
+  "high_sensory_state": 0,
+  "n_confident_trials": 28864,
+  "n_dropped_trials": 8887,
+  "bootstrap_samples": 2000,
+  "seed": 445
+}

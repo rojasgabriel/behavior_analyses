@@ -46,6 +46,9 @@ uv run python scripts/analyses/seed_behavior_analysis_set.py --help
 uv run python scripts/analyses/migrate_behavior_analysis_schema.py --help
 uv run python scripts/analyses/populate_behavior_tables.py --help
 uv run python scripts/analyses/plot_psychometrics.py --help
+uv run python scripts/analyses/engagement_state_preflight.py --help
+uv run python scripts/analyses/fit_engagement_states.py --help
+uv run python scripts/analyses/audit_engagement_state_validity.py --help
 ```
 
 Use `--dry-run` on seed/populate before any database writes.

@@ -1,0 +1,1 @@
+Synthetic recovery check only. Across the requested initializations, the best K=2 fit improved log likelihood by 0.050176 nats/trial over K=1 and recovered ordered state labels at 87.6% accuracy. This validates the session-reset fitting path; it does not select K for GRB006.

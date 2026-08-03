@@ -1,0 +1,36 @@
+{
+  "generated_at_utc": "2026-08-03T19:16:01.813423+00:00",
+  "task": "LAB-TASKS-445",
+  "subject_name": "GRB006",
+  "git_branch": "codex/lab-tasks-445",
+  "git_commit": "1973a0b89e3ce44dd996878a24c1e334546a1aa2",
+  "n_sessions": 167,
+  "n_trials": 37751,
+  "candidate_states": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "n_folds": 5,
+  "cv_seed": 445,
+  "em_iterations": 15,
+  "m_step_iterations": 20,
+  "model_selection_policy": "smallest K within one standard error of the best mean held-out whole-session log likelihood per trial across seeds",
+  "selected_k": 4,
+  "selected_seed": 1,
+  "full_data_log_likelihood": -18033.841796875,
+  "full_data_trace_non_decreasing": true,
+  "posterior_method": "Dynamax forward-backward smoothing",
+  "posterior_threshold_counts": {
+    "0.70": 34731,
+    "0.80": 33193,
+    "0.90": 30823
+  },
+  "mean_posterior_entropy_bits": 0.25134897232055664
+}

@@ -1,0 +1,50 @@
+{
+  "generated_at_utc": "2026-07-29T05:37:11.142254+00:00",
+  "task": "LAB-TASKS-445",
+  "source": {
+    "repository": "behavior_analyses",
+    "git_branch": "codex/lab-tasks-445",
+    "git_commit": "1973a0b89e3ce44dd996878a24c1e334546a1aa2",
+    "working_tree_dirty": true,
+    "task_mode": "discrimination"
+  },
+  "feasibility": {
+    "minimum_valid_trials_per_mouse": 3000,
+    "minimum_sessions_for_whole_session_cv": 5,
+    "n_subjects": 42,
+    "n_feasible_subjects": 29,
+    "n_trials": 577951,
+    "n_valid_trials": 309923,
+    "n_design_rows": 309923
+  },
+  "design_matrix": {
+    "sample_axis": "one row per retained binary-choice trial",
+    "sequences": "one sequence per mouse and session",
+    "outcome": "choice_right: 0=left response (-1), 1=right response (+1)",
+    "inputs": [
+      "intercept: 1",
+      "stimulus_evidence_hz: stim_rate_vision - category_boundary",
+      "previous_choice: previous retained response, coded -1/0/+1",
+      "previous_reward: previous retained reward, coded 0/1"
+    ],
+    "history_policy": "carry the previous retained valid trial through excluded trials; set previous_choice and previous_reward to 0 at every session start",
+    "boundary_policy": "include boundary trials as 0 Hz evidence (absolute tolerance 1e-09 Hz)",
+    "exclusions_are_mutually_exclusive": [
+      "early_withdrawal",
+      "missing_choice",
+      "no_choice",
+      "missing_stimulus",
+      "missing_reward"
+    ]
+  },
+  "paper_departures": [
+    "Use separate previous-choice and previous-reward covariates instead of Ashwood's previous-choice and win-stay/lose-switch terms; locked in the Notion task.",
+    "Remove invalid-choice trials before fitting instead of retaining violation trials with masked emissions; locked in the Notion task.",
+    "Use neutral zero history at each session start rather than copying or sampling an initial previous choice."
+  ],
+  "implementation_gate": {
+    "candidate": "Dynamax CategoricalRegressionHMM",
+    "status": "not installed; dependency approval required before model fitting",
+    "rejected_first_pass": "Ashwood's zashwood/ssm fork is paper-faithful but minimally supported and has no release"
+  }
+}

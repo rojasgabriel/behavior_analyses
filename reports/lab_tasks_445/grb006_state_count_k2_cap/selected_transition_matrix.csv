@@ -1,0 +1,5 @@
+scope,subject_name,num_states,fold,seed,from_state,to_state,probability
+full_data,GRB006,2,-1,0,0,0,0.9525064826011658
+full_data,GRB006,2,-1,0,0,1,0.04749355465173721
+full_data,GRB006,2,-1,0,1,0,0.03430190682411194
+full_data,GRB006,2,-1,0,1,1,0.9656980633735657

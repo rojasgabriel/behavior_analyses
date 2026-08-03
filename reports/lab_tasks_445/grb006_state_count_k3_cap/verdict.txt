@@ -1,0 +1,1 @@
+Preliminary state-count audit only. Whole-session validation selected K=3 by the one-standard-error rule; its mean held-out log likelihood was -0.497671 nats/trial versus -0.517736 for K=1. Review repeated-fit parameter spread, posterior entropy, occupancy, and dwell diagnostics before design lock. This audit does not make the neural-decoding claim.

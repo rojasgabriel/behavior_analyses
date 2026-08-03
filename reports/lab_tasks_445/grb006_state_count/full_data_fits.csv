@@ -1,0 +1,4 @@
+subject_name,num_states,seed,initial_log_likelihood,final_log_likelihood,em_trace_non_decreasing
+GRB006,4,0,-29284.142578125,-18508.46484375,True
+GRB006,4,1,-54066.796875,-18033.841796875,True
+GRB006,4,2,-26062.5703125,-18414.8359375,True

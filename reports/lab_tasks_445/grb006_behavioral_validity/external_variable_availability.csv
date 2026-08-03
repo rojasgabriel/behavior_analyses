@@ -1,0 +1,6 @@
+external_variable,status,reason
+response_latency,available,t_response - t_gocue
+withdrawal_rate,available_session_level_only,excluded trials have no state posterior
+reward_history,descriptive_only,previous reward defines states
+trial_position,available,full-session trial-number fraction
+motion,unavailable,not present in the Chipmunk behavior schema
